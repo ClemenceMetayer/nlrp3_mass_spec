@@ -11,6 +11,6 @@ This will create the data structure I use from the MS data.
 
 This will save files with the cosinor results and best models founds.
 
-### Have a look at the notebook `rhythmicity_analysis.ipynb`
+### Have a look at the notebook `cosinor_analysis_list_period.ipynb`
 
-This notebook presents the results of the Cosinor analysis. 
+This notebook presents the results of the Cosinor analysis for the range of period (20h-30h). 
