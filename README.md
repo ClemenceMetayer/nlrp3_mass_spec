@@ -7,7 +7,7 @@
 
 The scripts of this folder consist in running the Cosinor and RAIN analysis for the range of period 10h-28h. 
 
-### Folder 'Analye des rythmes - float'
+### Folder 'Analyse des rythmes - float'
 
 The scripts of this folder consist in running the Cosinor for the ranges of period 20.5h-21.5h and 23.5h-24.5h. 
 
