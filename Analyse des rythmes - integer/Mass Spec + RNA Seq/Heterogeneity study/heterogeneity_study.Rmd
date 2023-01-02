@@ -1,0 +1,330 @@
+---
+title: "Protein heterogeneity exploration - NLRP3/CTRL"
+author: "Clémence METAYER"
+date: "19 décembre 2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+# Importation of the data
+```{r}
+library(FactoMineR)
+library("factoextra")
+library("stringr")
+
+data_study_mass_spec <- read.csv("cosinor_periodic_pval_concat_serie_mass_spec.csv", dec=".")
+data_study_rna_seq <- read.csv("cosinor_periodic_pval_concat_serie_rna_seq.csv", dec=".")
+
+data_study <- rbind(data_study_mass_spec,data_study_rna_seq)
+
+# We store the condition of each row
+list_cond = c()
+for (row in data_study$test){
+  cond= str_split_1(row, "/")[2]
+  list_cond <- append(list_cond, cond)
+}
+data_study$cond = list_cond
+
+dta_study_18 <- data_study[data_study$period == "18",]
+dta_study_19 <- data_study[data_study$period == "19",]
+dta_study_20 <- data_study[data_study$period == "20",]
+dta_study_21 <- data_study[data_study$period == "21",]
+dta_study_22 <- data_study[data_study$period == "22",]
+dta_study_24 <- data_study[data_study$period == "24",]
+dta_study_25 <- data_study[data_study$period == "25",]
+dta_study_26 <- data_study[data_study$period == "26",]
+dta_study_27 <- data_study[data_study$period == "27",]
+dta_study_28 <- data_study[data_study$period == "28",]
+
+dta_study <- rbind(dta_study_18, dta_study_19, dta_study_20, 
+                  dta_study_21, dta_study_22, 
+                  dta_study_24, dta_study_25, dta_study_26,
+                  dta_study_27, dta_study_28
+                  )
+
+dta_study$period<-as.factor(dta_study$period)
+dta_study$n_components <- as.factor(dta_study$n_components)
+dta_study$p <- as.numeric(dta_study$p)
+dta_study$q <- as.numeric(dta_study$q)
+dta_study$RSS <- as.numeric(dta_study$RSS)
+dta_study$amplitude <- as.numeric(dta_study$amplitude)
+dta_study$acrophase <- as.numeric(dta_study$acrophase)
+dta_study$mesor <- as.numeric(dta_study$mesor)
+dta_study$n_points <- as.numeric(dta_study$n_points)
+
+summary(dta_study)
+```
+
+First, we are interested to know if some of the period differ in terms of p-values, q-values, amplitude, n_points, and RSS
+```{r}
+dta_study_ctrl <- dta_study[dta_study$cond == "ctrl",]
+summary(dta_study_ctrl)
+
+# Data for both Mass Spec and RNA seq
+dta_study_ctrl_18 <- dta_study_ctrl[dta_study_ctrl$period == 18,]
+dta_study_ctrl_19 <- dta_study_ctrl[dta_study_ctrl$period == 19,]
+dta_study_ctrl_20 <- dta_study_ctrl[dta_study_ctrl$period == 20,]
+dta_study_ctrl_21 <- dta_study_ctrl[dta_study_ctrl$period == 21,]
+dta_study_ctrl_22 <- dta_study_ctrl[dta_study_ctrl$period == 22,]
+dta_study_ctrl_24 <- dta_study_ctrl[dta_study_ctrl$period == 24,]
+dta_study_ctrl_25 <- dta_study_ctrl[dta_study_ctrl$period == 25,]
+dta_study_ctrl_26 <- dta_study_ctrl[dta_study_ctrl$period == 26,]
+dta_study_ctrl_27 <- dta_study_ctrl[dta_study_ctrl$period == 27,]
+dta_study_ctrl_28 <- dta_study_ctrl[dta_study_ctrl$period == 28,]
+
+# Data for Mass Spec
+list_cond = c()
+for (row in data_study_mass_spec$test){
+  cond= str_split_1(row, "/")[2]
+  list_cond <- append(list_cond, cond)
+}
+data_study_mass_spec$cond = list_cond
+
+data_study_mass_spec <- data_study_mass_spec[data_study_mass_spec$cond == "ctrl",]
+
+dta_study_ctrl_18_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 18,]
+dta_study_ctrl_19_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 19,]
+dta_study_ctrl_20_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 20,]
+dta_study_ctrl_21_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 21,]
+dta_study_ctrl_22_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 22,]
+dta_study_ctrl_24_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 24,]
+dta_study_ctrl_25_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 25,]
+dta_study_ctrl_26_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 26,]
+dta_study_ctrl_27_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 27,]
+dta_study_ctrl_28_mass_spec  <- data_study_mass_spec[data_study_mass_spec$period == 28,]
+data_study_mass_spec <- rbind(dta_study_ctrl_18_mass_spec,
+                            dta_study_ctrl_19_mass_spec,
+                            dta_study_ctrl_20_mass_spec, 
+                            dta_study_ctrl_21_mass_spec, 
+                            dta_study_ctrl_22_mass_spec, 
+                            dta_study_ctrl_24_mass_spec,
+                            dta_study_ctrl_25_mass_spec,
+                            dta_study_ctrl_26_mass_spec,
+                            dta_study_ctrl_27_mass_spec,
+                            dta_study_ctrl_28_mass_spec)
+
+# Data for RNA Seq
+list_cond = c()
+for (row in data_study_rna_seq$test){
+  cond= str_split_1(row, "/")[2]
+  list_cond <- append(list_cond, cond)
+}
+data_study_rna_seq$cond = list_cond
+
+data_study_rna_seq <- data_study_rna_seq[data_study_rna_seq$cond == "ctrl",]
+
+dta_study_ctrl_18_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 18,]
+dta_study_ctrl_19_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 19,]
+dta_study_ctrl_20_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 20,]
+dta_study_ctrl_21_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 21,]
+dta_study_ctrl_22_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 22,]
+dta_study_ctrl_24_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 24,]
+dta_study_ctrl_25_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 25,]
+dta_study_ctrl_26_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 26,]
+dta_study_ctrl_27_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 27,]
+dta_study_ctrl_28_rna_seq  <- data_study_rna_seq[data_study_rna_seq$period == 28,]
+data_study_rna_seq <- rbind(dta_study_ctrl_18_rna_seq,
+                            dta_study_ctrl_19_rna_seq,
+                            dta_study_ctrl_20_rna_seq, 
+                            dta_study_ctrl_21_rna_seq, 
+                            dta_study_ctrl_22_rna_seq, 
+                            dta_study_ctrl_24_rna_seq,
+                            dta_study_ctrl_25_rna_seq,
+                            dta_study_ctrl_26_rna_seq,
+                            dta_study_ctrl_27_rna_seq,
+                            dta_study_ctrl_28_rna_seq)
+
+# Mean amplitude by period
+data_study_mass_spec$period<-as.factor(data_study_mass_spec$period)
+data_study_rna_seq$period<-as.factor(data_study_rna_seq$period)
+
+mean_amplitude_mass_spec = c(mean(dta_study_ctrl_18_mass_spec$amplitude),
+                             mean(dta_study_ctrl_19_mass_spec$amplitude),
+                             mean(dta_study_ctrl_20_mass_spec$amplitude),
+                             mean(dta_study_ctrl_21_mass_spec$amplitude),
+                             mean(dta_study_ctrl_22_mass_spec$amplitude),
+                             mean(dta_study_ctrl_24_mass_spec$amplitude),
+                             mean(dta_study_ctrl_25_mass_spec$amplitude),
+                             mean(dta_study_ctrl_26_mass_spec$amplitude),
+                             mean(dta_study_ctrl_27_mass_spec$amplitude),
+                             mean(dta_study_ctrl_28_mass_spec$amplitude))
+period = c(18:22,24:28)
+tab_mean_amplitude_mass_spec <- data.frame(x = period, y = mean_amplitude_mass_spec) 
+plot(data_study_mass_spec$period,data_study_mass_spec$amplitude, xlab = 'Period', ylab = 'Amplitude (Mass Spectrometry)')
+
+mean_amplitude_rna_seq = c(mean(dta_study_ctrl_18_rna_seq$amplitude),
+                           mean(dta_study_ctrl_19_rna_seq$amplitude),
+                           mean(dta_study_ctrl_20_rna_seq$amplitude),
+                           mean(dta_study_ctrl_21_rna_seq$amplitude),
+                           mean(dta_study_ctrl_22_rna_seq$amplitude),
+                           mean(dta_study_ctrl_24_rna_seq$amplitude),
+                           mean(dta_study_ctrl_25_rna_seq$amplitude),
+                           mean(dta_study_ctrl_26_rna_seq$amplitude),
+                           mean(dta_study_ctrl_27_rna_seq$amplitude),
+                           mean(dta_study_ctrl_28_rna_seq$amplitude))
+period = c(18:22,24:28)
+tab_mean_amplitude_rna_seq <- data.frame(x = period, y = mean_amplitude_rna_seq) 
+plot(data_study_rna_seq$period,data_study_rna_seq$amplitude, xlab = 'Period', ylab = 'Amplitude (RNA-Seq)')
+
+# Mean p-value by period
+mean_pval = c(mean(dta_study_ctrl_18$p),mean(dta_study_ctrl_19$p),mean(dta_study_ctrl_20$p),
+              mean(dta_study_ctrl_21$p),mean(dta_study_ctrl_22$p),mean(dta_study_ctrl_24$p),
+              mean(dta_study_ctrl_25$p),mean(dta_study_ctrl_26$p),mean(dta_study_ctrl_27$p),
+              mean(dta_study_ctrl_28$p))
+period = c(18:22,24:28)
+tab_mean_pval <- data.frame(x = period, y = mean_pval) 
+plot(dta_study_ctrl$period,dta_study_ctrl$p, xlab = 'Period', ylab = 'p-value')
+
+# Mean q-value by period
+mean_qval = c(mean(dta_study_ctrl_18$q),mean(dta_study_ctrl_19$q),mean(dta_study_ctrl_20$q),
+              mean(dta_study_ctrl_21$q),mean(dta_study_ctrl_22$q),mean(dta_study_ctrl_24$q),
+              mean(dta_study_ctrl_25$q),mean(dta_study_ctrl_26$q),mean(dta_study_ctrl_27$q),
+              mean(dta_study_ctrl_28$q))
+period = c(18:22,24:28)
+tab_mean_qval <- data.frame(x = period, y = mean_qval) 
+plot(dta_study_ctrl$period,dta_study_ctrl$q, xlab = 'Period', ylab = 'q-value')
+
+# Mean RSS by period
+mean_rss_mass_spec = c(mean(dta_study_ctrl_18_mass_spec$RSS),
+                             mean(dta_study_ctrl_19_mass_spec$RSS),
+                             mean(dta_study_ctrl_20_mass_spec$RSS),
+                             mean(dta_study_ctrl_21_mass_spec$RSS),
+                             mean(dta_study_ctrl_22_mass_spec$RSS),
+                             mean(dta_study_ctrl_24_mass_spec$RSS),
+                             mean(dta_study_ctrl_25_mass_spec$RSS),
+                             mean(dta_study_ctrl_26_mass_spec$RSS),
+                             mean(dta_study_ctrl_27_mass_spec$RSS),
+                             mean(dta_study_ctrl_28_mass_spec$RSS))
+period = c(18:22,24:28)
+tab_mean_rss_mass_spec <- data.frame(x = period, y = mean_rss_mass_spec) 
+plot(data_study_mass_spec$period,data_study_mass_spec$RSS, xlab = 'Period', ylab = 'RSS (Mass Spectrometry)')
+
+mean_rss_rna_seq = c(mean(dta_study_ctrl_18_rna_seq$RSS),
+                           mean(dta_study_ctrl_19_rna_seq$RSS),
+                           mean(dta_study_ctrl_20_rna_seq$RSS),
+                           mean(dta_study_ctrl_21_rna_seq$RSS),
+                           mean(dta_study_ctrl_22_rna_seq$RSS),
+                           mean(dta_study_ctrl_24_rna_seq$RSS),
+                           mean(dta_study_ctrl_25_rna_seq$RSS),
+                           mean(dta_study_ctrl_26_rna_seq$RSS),
+                           mean(dta_study_ctrl_27_rna_seq$RSS),
+                           mean(dta_study_ctrl_28_rna_seq$RSS))
+period = c(18:22,24:28)
+tab_mean_rss_rna_seq <- data.frame(x = period, y = mean_rss_rna_seq) 
+plot(data_study_rna_seq$period,data_study_rna_seq$RSS, xlab = 'Period', ylab = 'RSS (RNA-Seq)')
+
+# Mean n_points by period
+mean_n_points = c(mean(dta_study_ctrl_18$n_points),mean(dta_study_ctrl_19$n_points),
+                  mean(dta_study_ctrl_20$n_points),mean(dta_study_ctrl_21$n_points),
+                  mean(dta_study_ctrl_22$n_points),mean(dta_study_ctrl_24$n_points),
+                  mean(dta_study_ctrl_25$n_points),mean(dta_study_ctrl_26$n_points),
+                  mean(dta_study_ctrl_27$n_points),mean(dta_study_ctrl_28$n_points))
+period = c(18:22,24:28)
+tab_mean_n_points <- data.frame(x = period, y = mean_n_points) 
+plot(dta_study_ctrl$period,dta_study_ctrl$n_points, xlab = 'Period', ylab = 'n_points')
+```
+
+
+In the dataset **dta_study**, we are not using all the variables for the FAMD
+```{r}
+colnames(dta_study)
+```
+
+--> We choose to use : period, p, q, RSS, amplitude, n_points
+
+```{r}
+# CONTROL ANALYSIS - MASS SPEC
+data_study_mass_spec <- rbind(dta_study_ctrl_21_mass_spec,
+                            dta_study_ctrl_24_mass_spec
+                            )
+
+data_study_mass_spec <- data_study_mass_spec[,c(2,4,5,6)]
+
+data_study_mass_spec$period<-as.factor(data_study_mass_spec$period)
+data_study_mass_spec$p <- as.numeric(data_study_mass_spec$p)
+data_study_mass_spec$q <- as.numeric(data_study_mass_spec$q)
+data_study_mass_spec$RSS <- as.numeric(data_study_mass_spec$RSS)
+
+summary(data_study_mass_spec)
+
+afdm <- FAMD(data_study_mass_spec,graph = FALSE)
+
+# Variables graph
+variables <- fviz_famd_var (afdm, repel = TRUE) + ggtitle("Variables")
+
+# Modalities of the variable "period"
+variables.mod <- fviz_famd_var(afdm, "quali.var",repel=TRUE)+ ggtitle("Period")
+
+# Quantitative variables graph
+quanti.var <- fviz_famd_var(afdm, "quanti.var", repel = TRUE,col.var = "black")+ggtitle("Quantitative variables")
+
+# Individuals graph
+individuals <- fviz_famd_ind(afdm,repel = FALSE,invisible = "quali.var")+ ggtitle("Protein/Condition")
+
+# Individuals graph colored by period
+library("ggplot2") 
+ind.period <- fviz_mfa_ind(afdm, label = "none", habillage = "period", addEllipses = TRUE, repel = FALSE, mean.point = TRUE,geom=c("point","text"))+ ggtitle("Individuals colored by period")+guides(colour = guide_legend(override.aes = aes(label = ""))) 
+
+# Individuals graph colored by pval
+require(gridExtra)
+my.cont.var <- data_study_mass_spec$p
+ind.pval <- fviz_mca_ind(afdm, label = "none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "p-value",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.0001604952, 0.04998066))
+
+# Individuals graph colored by qval
+require(gridExtra)
+my.cont.var <- data_study_mass_spec$q
+ind.qval <- fviz_mca_ind(afdm, label="none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "q-value",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.001484463, 0.9324804))
+
+# Individuals graph colored by RSS
+my.cont.var <- data_study_mass_spec$RSS
+ind.rss <- fviz_mca_ind(afdm, label= "none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "RSS",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(3.983297e-06, 14.776139))
+```
+
+```{r}
+# CONTROL ANALYSIS - RNA-SEQ
+data_study_rna_seq <- rbind(dta_study_ctrl_21_rna_seq,
+                            dta_study_ctrl_24_rna_seq)
+
+data_study_rna_seq <- data_study_rna_seq[data_study_rna_seq$RSS < 1e+10,]
+
+data_study_rna_seq <- data_study_rna_seq[,c(2,4,5,6)]
+
+data_study_rna_seq$period<-as.factor(data_study_rna_seq$period)
+data_study_rna_seq$p <- as.numeric(data_study_rna_seq$p)
+data_study_rna_seq$q <- as.numeric(data_study_rna_seq$q)
+data_study_rna_seq$RSS <- as.numeric(data_study_rna_seq$RSS)
+
+summary(data_study_rna_seq)
+
+afdm <- FAMD(data_study_rna_seq,graph = FALSE)
+
+# Variables graph
+variables <- fviz_famd_var (afdm, repel = TRUE) + ggtitle("Variables")
+
+# Modalities of the variable "period"
+variables.mod <- fviz_famd_var(afdm, "quali.var",repel=TRUE)+ ggtitle("Period")
+
+# Quantitative variables graph
+quanti.var <- fviz_famd_var(afdm, "quanti.var", repel = TRUE,col.var = "black")+ggtitle("Quantitative variables")
+
+# Individuals graph
+individuals <- fviz_famd_ind(afdm,repel = FALSE,invisible = "quali.var")+ ggtitle("Protein/Condition")
+
+# Individuals graph colored by period
+library("ggplot2") 
+ind.period <- fviz_mfa_ind(afdm, label = "none", habillage = "period", addEllipses = FALSE, repel = FALSE, mean.point = TRUE,geom=c("point","text"))+ ggtitle("Individuals colored by period")+guides(colour = guide_legend(override.aes = aes(label = ""))) 
+
+# Individuals graph colored by pval
+require(gridExtra)
+my.cont.var <- data_study_rna_seq$p
+ind.pval <- fviz_mca_ind(afdm, label = "none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "p-value",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(1.442731e-09,0.04999327))
+
+# Individuals graph colored by qval
+require(gridExtra)
+my.cont.var <- data_study_rna_seq$q
+ind.qval <- fviz_mca_ind(afdm, label="none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "q-value",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(1.399261e-08, 0.1886144))
+
+# Individuals graph colored by RSS
+my.cont.var <- data_study_rna_seq$RSS
+ind.rss <- fviz_mca_ind(afdm, label= "none", col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "RSS",repel=FALSE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.8695651, 61389274914))
+```
