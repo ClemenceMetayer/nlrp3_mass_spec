@@ -1,0 +1,170 @@
+---
+title: "Protein heterogeneity exploration - NLRP3/CTRL"
+author: "Clémence METAYER"
+date: "19 décembre 2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+# Importation of the data
+```{r}
+library(FactoMineR)
+library("factoextra")
+library("stringr")
+
+data_study <- read.csv("cosinor_periodic_pval_concat_serie.csv", dec=".")
+
+# We store the condition of each row
+list_cond = c()
+for (row in data_study$test){
+  cond= str_split_1(row, "/")[2]
+  list_cond <- append(list_cond, cond)
+}
+data_study$cond = list_cond
+
+#dta_study_12 <- data_study[data_study$period == "12",]
+#dta_study_18 <- data_study[data_study$period == "18",]
+dta_study_19 <- data_study[data_study$period == "19",]
+dta_study_23 <- data_study[data_study$period == "23",]
+dta_study_24 <- data_study[data_study$period == "24",]
+dta_study_25 <- data_study[data_study$period == "25",]
+dta_study_26 <- data_study[data_study$period == "26",]
+#dta_study_27 <- data_study[data_study$period == "27",]
+#dta_study_28 <- data_study[data_study$period == "28",]
+
+dta_study <- rbind(#dta_study_12,dta_study_18,
+                  dta_study_19, dta_study_23, dta_study_24, dta_study_25, dta_study_26
+                  #, dta_study_27, dta_study_28)
+                  )
+
+dta_study$period<-as.factor(dta_study$period)
+dta_study$n_components <- as.factor(dta_study$n_components)
+dta_study$p <- as.numeric(dta_study$p)
+dta_study$q <- as.numeric(dta_study$q)
+dta_study$RSS <- as.numeric(dta_study$RSS)
+dta_study$amplitude <- as.numeric(dta_study$amplitude)
+dta_study$acrophase <- as.numeric(dta_study$acrophase)
+dta_study$mesor <- as.numeric(dta_study$mesor)
+dta_study$n_points <- as.numeric(dta_study$n_points)
+
+summary(dta_study)
+```
+
+In the dataset **data_study**, we are not using all the variables for the FAMD
+```{r}
+colnames(dta_study)
+```
+
+--> We choose to use : period, p, q, RSS, amplitude, n_points
+
+```{r}
+# CONTROL ANALYSIS
+dta_study_ctrl <- dta_study[dta_study$cond == "ctrl",]
+dta_study_ctrl <- dta_study_ctrl[,c(2,4,5,6,7,10)]
+dta_study_ctrl <- dta_study_ctrl[dta_study_ctrl$n_points >= 15,]
+summary(dta_study_ctrl)
+
+afdm <- FAMD(dta_study_ctrl,graph = FALSE)
+
+# Variables graph
+variables <- fviz_famd_var (afdm, repel = TRUE) + ggtitle("Variables")
+
+# Modalities of the variable "period"
+variables.mod <- fviz_famd_var(afdm, "quali.var",repel=TRUE)+ ggtitle("Period")
+
+# Quantitative variables graph
+quanti.var <- fviz_famd_var(afdm, "quanti.var", repel = TRUE,col.var = "black")+ggtitle("Quantitative variables")
+
+# Individuals graph
+individuals <- fviz_famd_ind(afdm,repel = TRUE,invisible = "quali.var")+ ggtitle("Protein/Condition")
+
+# Individuals graph colored by period
+library("ggplot2") 
+ind.period <- fviz_mfa_ind(afdm,habillage = "period", addEllipses = TRUE, repel = TRUE, mean.point = TRUE,geom=c("point","text"))+ ggtitle("Individuals colored by period")+guides(colour = guide_legend(override.aes = aes(label = ""))) 
+
+# Individuals graph colored by pval
+require(gridExtra)
+my.cont.var <- dta_study_ctrl$p
+ind.pval <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "p-value",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(1.44343e-07, 0.04998066))
+
+# Individuals graph colored by qval
+require(gridExtra)
+my.cont.var <- dta_study_ctrl$q
+ind.qval <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "q-value",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(2.742515e-06, 0.9414215))
+
+# Individuals graph colored by RSS
+my.cont.var <- dta_study_ctrl$RSS
+ind.rss <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "RSS",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.0247, 23.193))
+
+# Individuals graph colored by amplitude
+my.cont.var <- dta_study_ctrl$amplitude
+ind.amplitude <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "Amplitude",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.02745927, 19.562273))
+plot(dta_study_ctrl$period,dta_study_ctrl$amplitude, xlab = 'Period', ylab = 'Amplitude')
+
+# Mean amplitude by period
+dta_study_ctrl_18 <- dta_study_ctrl[dta_study_ctrl$period == 18,]
+mean(dta_study_ctrl_18$amplitude)
+dta_study_ctrl_19 <- dta_study_ctrl[dta_study_ctrl$period == 19,]
+mean(dta_study_ctrl_19$amplitude)
+dta_study_ctrl_20 <- dta_study_ctrl[dta_study_ctrl$period == 20,]
+mean(dta_study_ctrl_20$amplitude)
+
+# Individuals graph colored by n_points
+my.cont.var <- dta_study_ctrl$n_points
+ind.n_points <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "n_points",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(10, 36))
+plot(dta_study_ctrl$period,dta_study_ctrl$n_points, xlab = 'Period', ylab = 'n_points')
+
+# Mean n_points by period
+dta_study_ctrl_18 <- dta_study_ctrl[dta_study_ctrl$period == 18,]
+mean(dta_study_ctrl_18$n_points)
+dta_study_ctrl_19 <- dta_study_ctrl[dta_study_ctrl$period == 19,]
+mean(dta_study_ctrl_19$n_points)
+dta_study_ctrl_20 <- dta_study_ctrl[dta_study_ctrl$period == 20,]
+mean(dta_study_ctrl_20$n_points)
+
+```
+
+
+```{r}
+# NLRP3 ANALYSIS
+dta_study_nlrp3 <- dta_study[dta_study$cond == "nlrp3",]
+dta_study_nlrp3 <- dta_study_nlrp3[,c(2,4,8,12,21)]
+#dta_study_nlrp3 <- dta_study_nlrp3[dta_study_nlrp3$n_points > 15,]
+summary(dta_study_nlrp3)
+
+afdm <- FAMD(dta_study_nlrp3,graph = FALSE)
+
+# Variables graph
+variables <- fviz_famd_var (afdm, repel = TRUE) + ggtitle("Variables")
+
+# Modalities of the variable "period"
+variables.mod <- fviz_famd_var(afdm, "quali.var",repel=TRUE)+ ggtitle("Period")
+
+# Quantitative variables graph
+quanti.var <- fviz_famd_var(afdm, "quanti.var", repel = TRUE,col.var = "black")+ggtitle("Quantitative variables")
+
+# Individuals graph
+individuals <- fviz_famd_ind(afdm,repel = TRUE,invisible = "quali.var")+ ggtitle("Test")
+
+# Individuals graph colored by period
+library("ggplot2") 
+ind.period <- fviz_mfa_ind(afdm,habillage = "period", addEllipses = TRUE, repel = TRUE, mean.point = TRUE,geom=c("point","text"))+ ggtitle("Individuals colored by period")+guides(colour = guide_legend(override.aes = aes(label = ""))) 
+
+# Individuals graph colored by pval
+require(gridExtra)
+my.cont.var <- dta_study_nlrp3$p
+ind.pval <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "p-value",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(7.1*10^(-7), 0.99))
+
+# Individuals graph colored by RSS
+my.cont.var <- dta_study_nlrp3$RSS
+ind.rss <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "RSS",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(4.9*10^(-8), 16.8))
+
+# Individuals graph colored by amplitude
+my.cont.var <- dta_study_nlrp3$amplitude
+ind.amplitude <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "Amplitude",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(0.02,4.2))
+
+# Individuals graph colored by n_points
+my.cont.var <- dta_study_nlrp3$n_points
+ind.n_points <- fviz_mca_ind(afdm, col.ind = my.cont.var,gradient.cols =c("blue", "yellow", "red"),legend.title = "n_points",repel=TRUE)+ ggtitle("Individuals graph")+scale_color_gradient2(low="blue", mid="yellow",high="red",limits=c(4, 36))
+
+```
