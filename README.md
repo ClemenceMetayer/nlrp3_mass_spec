@@ -3,16 +3,14 @@
 [CosinorPy](https://github.com/mmoskon/CosinorPy)
 [RAIN](https://www.bioconductor.org/packages/release/bioc/html/rain.html)
 
-### Run `create_dataset.py`
+### Folder 'Analye des rythmes - integer'
 
-This will create the data structure I use from the MS data.
+The scripts of this folder consist in running the Cosinor and RAIN analysis for the range of period 10h-28h. 
 
-### Run `run_cosinor_list_period.py`
+### Folder 'Analye des rythmes - float'
 
-This will save files with the cosinor results and best models founds.
-This file uses the updated version of CosinorPy (cosinor_float_period.py) which allows decimal periods. 
-The function get_best_fits has also been modified to determine the best period with a F-test.
+The scripts of this folder consist in running the Cosinor for the ranges of period 20.5h-21.5h and 23.5h-24.5h. 
 
-### Have a look at the notebook `cosinor_analysis_list_period.ipynb`
+### Folder 'Résultats horloge circadienne'
 
-This notebook presents the results of the Cosinor analysis for the range of period (20h-30h). 
+The scripts of this folder will present the results of the fit for the element of the circadian clock mainly, NLRP3 and ATM.
