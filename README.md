@@ -3,7 +3,7 @@
 [CosinorPy](https://github.com/mmoskon/CosinorPy)
 [RAIN](https://www.bioconductor.org/packages/release/bioc/html/rain.html)
 
-### Folder 'Analye des rythmes - integer'
+### Folder 'Analyse des rythmes - integer'
 
 The scripts of this folder consist in running the Cosinor and RAIN analysis for the range of period 10h-28h. 
 
